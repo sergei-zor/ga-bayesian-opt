@@ -36,7 +36,7 @@ At each BO iteration:
 The Bayesian optimization is run with:
 
 ```
-python bayesian_optimization.py --n_init 30 --ga_iter 25 --bo_iter 30 --acq ucb
+python bo_runner.py --n_init 30 --ga_iter 25 --bo_iter 30 --acq ucb
 
 ```
 
@@ -65,8 +65,16 @@ The GA can also be executed separately for testing/debugging:
 python ga_runner.py 
 
 ```
+Instead of performing expensive FFT-simulations, genetic algorithm uses pretrained surogate model, consisting of:
+
+* `DenseNet3D.py` - 3D CNN architecture
+* `model_state.pth` - weights of pretrained model
 
 ### Contributors
 
 * Sergei Zorkaltsev
 * Christina Schenk
+
+### License
+
+The code is released under the **BSD 3-Clause License (BSD-3)** license.

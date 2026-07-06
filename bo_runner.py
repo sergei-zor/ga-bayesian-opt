@@ -17,6 +17,7 @@ from botorch.models import SingleTaskGP
 from botorch.acquisition import ExpectedImprovement
 from botorch.acquisition.analytic import UpperConfidenceBound
 from botorch.acquisition.monte_carlo import qNoisyExpectedImprovement
+from botorch.models.utils.gpytorch_modules import get_matern_kernel_with_gamma_prior
 from botorch.optim import optimize_acqf
 
 try:
@@ -270,8 +271,10 @@ def run_bo(n_init=20,
         return torch.log(Y_shifted.to(dtype=dtype, device=device))
 
     train_Y_for_gp = make_train_targets_for_gp(train_Y_used, is_log_acq)
+    dim = train_X.shape[-1]
+    matern = get_matern_kernel_with_gamma_prior(ard_num_dims=dim)
 
-    model = SingleTaskGP(train_X, train_Y_for_gp)   
+    model = SingleTaskGP(train_X, train_Y_for_gp, covar_module=matern)   
     mll = ExactMarginalLogLikelihood(model.likelihood, model)
     fit_gpytorch_model(mll)
     save_gp_state(model, train_X, train_Y_for_gp, iteration=0)
@@ -281,8 +284,11 @@ def run_bo(n_init=20,
     for it in range(bo_iterations):
         print(f'\nBO iteration {it+1}/{bo_iterations}, train size = {train_X.shape[0]}')
 
+        dim = train_X.shape[-1]
+        matern = get_matern_kernel_with_gamma_prior(ard_num_dims=dim)
         model = SingleTaskGP(train_X,
                              train_Y_for_gp,   
+                             covar_module=matern,
                              outcome_transform=Standardize(m=1)).to(train_X.device)
 
         mll = ExactMarginalLogLikelihood(model.likelihood, model)
